@@ -48,7 +48,7 @@ class twist_converter:
                         self.subscribers[0] = rospy.Subscriber("base_scan", LaserScan, self.callback, 0)
 
                 self.data_uri = rospy.get_param("data_uri","/twist");
-                self.urls = (self.data_uri,'twist', "/stop","stop")
+                self.urls = (self.data_uri,'twist', "/stop","stop", "/state","state")
                 self.data = ['-10']*self.num_robots;
                 self.port=int(rospy.get_param("~port","8080"));
                 #self.data_uri2 = rospy.get_param("data_uri","/pose");
@@ -57,7 +57,7 @@ class twist_converter:
         def callback(self,msg,id):
                 #get the data from the message and store as a string
                 try:
-                        self.data[id] = " ".join(map(str,msg.ranges))
+                        self.data[id] = " ".join(map(str,msg.ranges)).replace(" ",",")
                 except Exception, err:
                         rospy.logwarn("Cannot convert the LaserScan message due to %s for robot %s" % err, id)
 
@@ -101,6 +101,30 @@ class twist:
                 #output to browser
                 web.header("Content-Type", "text/plain") # Set the Header
                 return data
+class state:
+        def GET(self):
+                return self.process()
+        def POST(self):
+                return self.process()
+        def process(self):
+                global tc
+                msg=Twist();
+                robot_id=0;
+                i = web.input();
+                try:
+                        if hasattr(i, "id"):
+                                robot_id = int(tid[i.id])
+                        #msg.linear.z = -0.0049
+                except Exception, err:
+                        rospy.logwarn("Doesn't know what ID %s" % err)
+
+                data = tc.data[robot_id];
+                size = len(data);
+                web.header("Content-Length", str(size)) # Set the Header
+                #output to browser
+                web.header("Content-Type", "text/plain") # Set the Header
+                return data
+
 
 tc = twist_converter()
 app = web.application(tc.urls, globals())
