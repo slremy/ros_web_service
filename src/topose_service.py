@@ -25,16 +25,29 @@ import roslib
 roslib.load_manifest('geometry_msgs')
 import rospy
 import web
+from math import sin,cos
 from geometry_msgs.msg import Pose
 
 class pose_converter:
         def __init__(self):
                 rospy.init_node('pose_converter', anonymous=True)
-                self.publisher = rospy.Publisher('pose',Pose);
+                self.num_robots=int(rospy.get_param('~num_robots',1))
+                self.publishers = [None]*self.num_robots; 
+                self.subscribers = [None]*self.num_robots; 
+                if rospy.has_param('~robot_prefix'): #if there is a robot prefix assume that there is actually one or more
+                	#full_param_name = rospy.search_param('robot_prefix')
+                	#robot_prefix = rospy.get_param(full_param_name)
+                	robot_prefix=rospy.get_param('~robot_prefix')
+                	for r in range(self.num_robots):
+                		self.publishers[r]=rospy.Publisher(robot_prefix+str(r)+'/pose',Pose,queue_size=10);
+                else: # if no robot prefix, assume that there is only one robot
+                	self.publishers[0] = rospy.Publisher('pose',Pose,queue_size=10);rospy.logwarn("assuming /pose, number of robots actually"+str(self.num_robots))
+
                 self.data_uri = rospy.get_param("data_uri","/pose");
                 self.urls = (self.data_uri,'pose', "/stop","stop")
+                self.data = ['-10']*self.num_robots;
+                self.port=int(rospy.get_param("~port","8080"));
                 rospy.logwarn("running")
-
 class stop:
         def GET(self):
                 return exit(0)
@@ -48,6 +61,7 @@ class pose:
         def process(self):
                 global pc
                 msg=Pose();
+                robot_id=0;
                 i = web.input();
                 try:
                         if hasattr(i, "px"):
@@ -64,7 +78,12 @@ class pose:
                                 msg.orientation.z = float(i.oz)
                         if hasattr(i, "ow"):
                                 msg.orientation.w = float(i.ow)
-                        pc.publisher.publish(msg);
+                        if hasattr(i, "a"):
+                                a=float(i.a)
+                                (msg.orientation.x, msg.orientation.y, msg.orientation.z, msg.orientation.w) = (0,0,sin(a/2),cos(a/2))
+                        if hasattr(i, "id"):
+                                robot_id = int(i.id)
+                        if robot_id < pc.num_robots: pc.publishers[robot_id].publish(msg);
                 except Exception, err:
                         rospy.logwarn("Cannot convert/publish due to %s" % err)
 
@@ -81,11 +100,10 @@ app = web.application(pc.urls, globals())
 if __name__ == "__main__":
         wsgifunc = app.wsgifunc()
         wsgifunc = web.httpserver.StaticMiddleware(wsgifunc)
-        server = web.httpserver.WSGIServer(("0.0.0.0", 8080),wsgifunc)
-        print "http://%s:%d/%s" % ("0.0.0.0", 8080, pc.urls)
+        server = web.httpserver.WSGIServer(("0.0.0.0",  pc.port),wsgifunc)
+        print "http://%s:%d/%s" % ("0.0.0.0", pc.port, pc.urls)
         try:
                 server.start()
         except (KeyboardInterrupt, SystemExit):
                 server.stop()
                 print "Shutting down service"
-
