@@ -6,6 +6,13 @@
         <param name="data_uri" value="/twist"/>
   </node>
 
+  <node pkg="ros_web_service" type="totwistscan_service.py" name="twistscan_publisher" args="" required = "true">
+        <param name="robot_prefix" value="robot_"/>
+        <param name="num_robots" value="4"/>
+        <param name="port" value="8083"/>
+        <param name="data_uri" value="/twist"/>
+  </node>
+  
   <node pkg="ros_web_service" type="totwistodom_service.py" name="twist_publisher_global" args="" required = "true">
         <param name="robot_prefix" value="robot_"/>
         <param name="num_robots" value="4"/>
@@ -14,6 +21,12 @@
         <param name="data_uri" value="/twist"/>
   </node>
 
+  <node pkg="ros_web_service" type="topose_service.py" name="pose_publisher" args="" required = "true">
+        <param name="robot_prefix" value="robot_"/>
+        <param name="num_robots" value="4"/>
+        <param name="port" value="8085"/>
+        <param name="data_uri" value="/twist"/>
+  </node>
   <node pkg="mjpeg_server" type="mjpeg_server" name="video_server">
         <param name="port" value="8081"/>
   </node>
