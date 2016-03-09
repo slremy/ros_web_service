@@ -100,6 +100,8 @@ class twist:
                 web.header("Content-Length", str(size)) # Set the Header
                 #output to browser
                 web.header("Content-Type", "text/plain") # Set the Header
+                web.header('Access-Control-Allow-Origin',      '*')
+                web.header('Access-Control-Allow-Credentials', 'true')
                 return data
 class state:
         def GET(self):
@@ -123,6 +125,8 @@ class state:
                 web.header("Content-Length", str(size)) # Set the Header
                 #output to browser
                 web.header("Content-Type", "text/plain") # Set the Header
+                web.header('Access-Control-Allow-Origin',      '*')
+                web.header('Access-Control-Allow-Credentials', 'true')
                 return data
 
 
