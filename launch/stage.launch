@@ -27,7 +27,7 @@
         <param name="port" value="8085"/>
         <param name="data_uri" value="/twist"/>
   </node>
-  <node pkg="mjpeg_server" type="mjpeg_server" name="video_server">
+  <node pkg="web_video_server" type="web_video_server" name="video_server">
         <param name="port" value="8081"/>
   </node>
   <node pkg="stage_ros" type="stageros" name="simulation" args="$(find ros_web_service)/launch/willow-erratic.world" respawn="true">
