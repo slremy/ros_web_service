@@ -47,7 +47,7 @@ class twist_converter:
                 rospy.init_node('twist_converter', anonymous=True)
                 self.num_robots=int(rospy.get_param('~num_robots',1))
                 self.publishers = [None]*self.num_robots; 
-                self.subscribers = [None]*self.num_robots; 
+                self.subscribers = [None]*self.num_robots;
                 if rospy.has_param('~robot_prefix'): #if there is a robot prefix assume that there is actually one or more
                 	#full_param_name = rospy.search_param('robot_prefix')
                 	#robot_prefix = rospy.get_param(full_param_name)
@@ -56,7 +56,6 @@ class twist_converter:
                                 self.odomname = rospy.get_param("~odomname","/odom");
                 		self.publishers[r]=rospy.Publisher(robot_prefix+str(r)+'/cmd_vel',Twist);
                                 self.subscribers[r] = rospy.Subscriber(robot_prefix+str(r)+self.odomname, Odometry, self.callback, r)
-                                #self.subscribers[r] = rospy.Subscriber(robot_prefix+str(r)+'/odom', Odometry, self.callback, r)
                 else: # if no robot prefix, assume that there is only one robot
                 	self.publishers[0] = rospy.Publisher('cmd_vel',Twist);rospy.logwarn("assuming /cmd_vel, number of robots actually"+str(self.num_robots))
                         self.subscribers[0] = rospy.Subscriber("base_pose_ground_truth", Odometry, self.callback, 0)
@@ -71,8 +70,7 @@ class twist_converter:
         def callback(self,msg,id):
                 #get the data from the message and store as a string
                 try:
-                        qlist = [msg.pose.pose.orientation.x,msg.pose.pose.orientation.y,msg.pose.pose.orientation.z,msg.pose.pose.orientation.w]
-                        self.data[id] = str(msg.pose.pose.position.x)+','+str(msg.pose.pose.position.y)+','+str(msg.pose.pose.position.z)+','+str(euler_from_quaternion(qlist)[2])+','+str(msg.twist.twist.linear.x)+','+str(msg.twist.twist.linear.y)+','+str(msg.twist.twist.linear.z)+','+str(msg.twist.twist.angular.x)+','+str(msg.twist.twist.angular.y)+','+str(msg.twist.twist.angular.z);
+                        self.data[id] = str(time)+","+str(msg.pose.pose.position.x)+','+str(msg.pose.pose.position.y)+','+str(msg.pose.pose.position.z)+','+str(msg.pose.pose.orientation.x)+','+str(msg.pose.pose.orientation.y)+','+str(msg.pose.pose.orientation.z)+','+str(msg.pose.pose.orientation.w)
                 except Exception, err:
                         rospy.logwarn("Cannot convert the Pose message due to %s for robot %s" % err, id)
                         
@@ -96,7 +94,7 @@ class twist:
         def POST(self):
                 return self.process()
         def process(self):
-                global tc
+                global tc, time
                 msg=Twist();
                 robot_id=1000;
                 i = web.input();print i
@@ -116,6 +114,8 @@ class twist:
                         if hasattr(i, "id"):
                                 #robot_id = int(i.id)
                                 robot_id = myaccess[i.id]
+                        if hasattr(i, "time"):
+                                time = float(i.time)
                         #msg.linear.z = -0.0049
                         if robot_id < tc.num_robots: tc.publishers[robot_id].publish(msg);
                 except Exception, err:
