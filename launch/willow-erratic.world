@@ -78,7 +78,7 @@ window
 floorplan
 ( 
   name "willow"
-  bitmap "/opt/ros/indigo/share/stage_ros/world/willow-full.pgm"
+  bitmap "/opt/ros/noetic/share/stage_ros/world/willow-full.pgm"
   size [54.0 58.7 0.5]
   pose [ -29.350 27.000 0 90.000 ]
 )
