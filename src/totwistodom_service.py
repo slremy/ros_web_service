@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 '''
  Copyright (c) 2012 Sekou Remy
  
@@ -37,15 +37,15 @@ class twist_converter:
                 self.publishers = [None]*self.num_robots; 
                 self.subscribers = [None]*self.num_robots; 
                 if rospy.has_param('~robot_prefix'): #if there is a robot prefix assume that there is actually one or more
-                	#full_param_name = rospy.search_param('robot_prefix')
-                	#robot_prefix = rospy.get_param(full_param_name)
-                	robot_prefix=rospy.get_param('~robot_prefix')
-                	for r in range(self.num_robots):
-                		self.publishers[r]=rospy.Publisher(robot_prefix+str(r)+'/cmd_vel',Twist,queue_size=10);
-                                self.subscribers[r] = rospy.Subscriber(robot_prefix+str(r)+'/odom', Odometry, self.callback, r)
+                    #full_param_name = rospy.search_param('robot_prefix')
+                    #robot_prefix = rospy.get_param(full_param_name)
+                    robot_prefix=rospy.get_param('~robot_prefix')
+                    for r in range(self.num_robots):
+                       self.publishers[r]=rospy.Publisher(robot_prefix+str(r)+'/cmd_vel',Twist,queue_size=10);
+                       self.subscribers[r] = rospy.Subscriber(robot_prefix+str(r)+'/odom', Odometry, self.callback, r)
                 else: # if no robot prefix, assume that there is only one robot
-                	self.publishers[0] = rospy.Publisher('cmd_vel',Twist,queue_size=10);rospy.logwarn("assuming /cmd_vel, number of robots actually"+str(self.num_robots))
-                        self.subscribers[0] = rospy.Subscriber("odom", Odometry, self.callback, 0)
+                    self.publishers[0] = rospy.Publisher('cmd_vel',Twist,queue_size=10);rospy.logwarn("assuming /cmd_vel, number of robots actually"+str(self.num_robots))
+                    self.subscribers[0] = rospy.Subscriber("odom", Odometry, self.callback, 0)
 
                 self.data_uri = rospy.get_param("data_uri","/twist");
                 self.urls = (self.data_uri,'twist', "/stop","stop", "/state","state","/controller","controller")
@@ -58,7 +58,7 @@ class twist_converter:
                 #get the data from the message and store as a string
                 try:
                         self.data[id] = str(msg.pose.pose.position.x)+','+str(msg.pose.pose.position.y)+','+str(msg.pose.pose.position.z)+','+str(msg.pose.pose.orientation.x)+','+str(msg.pose.pose.orientation.y)+','+str(msg.pose.pose.orientation.z)+','+str(msg.pose.pose.orientation.w)
-                except Exception, err:
+                except Exception as err:
                         rospy.logwarn("Cannot convert the Pose message due to %s for robot %s" % err, id)
 
 class controller:
@@ -100,7 +100,7 @@ class twist:
                                 robot_id = int(i.id)
                         #msg.linear.z = -0.0049
                         if robot_id < tc.num_robots: tc.publishers[robot_id].publish(msg);
-                except Exception, err:
+                except Exception as err:
                         rospy.logwarn("Cannot convert/publish due to %s" % err)
 
                 data = tc.data[robot_id];
@@ -126,7 +126,7 @@ class state:
                         if hasattr(i, "id"):
                                 robot_id = int(i.id)
                         #msg.linear.z = -0.0049
-                except Exception, err:
+                except Exception as err:
                         rospy.logwarn("Doesn't know what ID %s" % err)
 
                 data = tc.data[robot_id];
@@ -146,12 +146,12 @@ if __name__ == "__main__":
         wsgifunc = web.httpserver.StaticMiddleware(wsgifunc);
         #server = web.httpserver.WSGIServer(("0.0.0.0", 8080),wsgifunc)
         server = web.httpserver.WSGIServer(("0.0.0.0", tc.port),wsgifunc)
-        print "http://%s:%d/%s" % ("0.0.0.0", tc.port, tc.urls)
+        print("http://%s:%d/%s" % ("0.0.0.0", tc.port, tc.urls))
         try:
                 server.start()
         except (KeyboardInterrupt, SystemExit):
                 server.stop()
-                print "Shutting down service"
+                print("Shutting down service")
                 msg=Twist();
                 msg.linear.z = -0.0049;
                 for i in range(tc.num_robots):
