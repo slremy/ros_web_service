@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 '''
  Copyright (c) 2012 Sekou Remy
  
@@ -35,13 +35,13 @@ class pose_converter:
                 self.publishers = [None]*self.num_robots; 
                 self.subscribers = [None]*self.num_robots; 
                 if rospy.has_param('~robot_prefix'): #if there is a robot prefix assume that there is actually one or more
-                	#full_param_name = rospy.search_param('robot_prefix')
-                	#robot_prefix = rospy.get_param(full_param_name)
-                	robot_prefix=rospy.get_param('~robot_prefix')
-                	for r in range(self.num_robots):
-                		self.publishers[r]=rospy.Publisher(robot_prefix+str(r)+'/pose',Pose,queue_size=10);
+                    #full_param_name = rospy.search_param('robot_prefix')
+                    #robot_prefix = rospy.get_param(full_param_name)
+                    robot_prefix=rospy.get_param('~robot_prefix')
+                    for r in range(self.num_robots):
+                       self.publishers[r]=rospy.Publisher(robot_prefix+str(r)+'/pose',Pose,queue_size=10);
                 else: # if no robot prefix, assume that there is only one robot
-                	self.publishers[0] = rospy.Publisher('pose',Pose,queue_size=10);rospy.logwarn("assuming /pose, number of robots actually"+str(self.num_robots))
+                    self.publishers[0] = rospy.Publisher('pose',Pose,queue_size=10);rospy.logwarn("assuming /pose, number of robots actually"+str(self.num_robots))
 
                 self.data_uri = rospy.get_param("data_uri","/pose");
                 self.urls = (self.data_uri,'pose', "/stop","stop")
@@ -84,7 +84,7 @@ class pose:
                         if hasattr(i, "id"):
                                 robot_id = int(i.id)
                         if robot_id < pc.num_robots: pc.publishers[robot_id].publish(msg);
-                except Exception, err:
+                except Exception as err:
                         rospy.logwarn("Cannot convert/publish due to %s" % err)
 
                 data = '';
@@ -101,9 +101,9 @@ if __name__ == "__main__":
         wsgifunc = app.wsgifunc()
         wsgifunc = web.httpserver.StaticMiddleware(wsgifunc)
         server = web.httpserver.WSGIServer(("0.0.0.0",  pc.port),wsgifunc)
-        print "http://%s:%d/%s" % ("0.0.0.0", pc.port, pc.urls)
+        print("http://%s:%d/%s" % ("0.0.0.0", pc.port, pc.urls))
         try:
                 server.start()
         except (KeyboardInterrupt, SystemExit):
                 server.stop()
-                print "Shutting down service"
+                print("Shutting down service")
